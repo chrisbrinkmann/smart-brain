@@ -1,0 +1,40 @@
+body {
+	text-align: center;
+	padding: 1rem;
+	margin: 0;
+	font-family: 'Roboto Mono', sans-serif;
+	background: linear-gradient(to right, rgb(238, 106, 109), rgb(70, 159, 249));
+}
+
+button {
+	cursor: pointer;
+}
+
+.center {
+	display:flex;
+	justify-content: center;
+}
+
+.particles {
+	position: fixed;
+	top:0;
+	right:0;
+	bottom:0;
+	left:0;
+	z-index: -1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
