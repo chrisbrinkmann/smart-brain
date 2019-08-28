@@ -1,13 +1,13 @@
 import React from 'react';
 
-function Rank(){
+function Rank( { user } ){
 	return (
 		<div>
 			<div className='white f3'>
-				Chris, your current rank is...
+				{user.name}, your current entry count is...
 			</div>
 			<div className='white f1'>
-				#5
+				{user.entries}
 			</div>
 		</div>
 	)

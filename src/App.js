@@ -34,9 +34,18 @@ class App extends Component {
       imageUrl: '',
       boxes: [],
       route: 'signin',
-      isSignedIn: false
+      isSignedIn: false,
+      user: {
+        id: '',
+        email: '',
+        password: '',
+        name: '',
+        entries: 0,
+        joined: '',
+      }
     }
   }
+
 
   // @param the response from the Clarifai API request
   // the response has the locations of faces detected in the image in floating point form
@@ -73,13 +82,38 @@ class App extends Component {
   }
 
   // sends request to the Calrifai API for image prediction (face detection)
-  // calls 'displayFaceBoxes' to draw the boxes around detected faces
   onSubmitHandler = () => {
     this.setState({ imageUrl: this.state.input })
     app.models.predict(
       Clarifai.FACE_DETECT_MODEL,
       this.state.input)
-      .then(resp => this.displayFaceBoxes(this.calculateFaceLocations(resp)))
+      .then(clarifaiResp => {
+        // if we get a response from the API
+        if (clarifaiResp) {
+          // send a request to our DB server to update the user's entries count
+          fetch('http://localhost:3000/entry', {
+            method: 'put',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: this.state.user.id
+            })
+          })
+              // the server will respond with the user's updated entries count
+             .then(resp => resp.json())
+             .then(count => {
+              this.setState({
+                user: {
+                  ...this.state.user,
+                  entries: count
+                }
+              })
+             }) 
+        }
+        // finally call calc/display face boxes functions
+        console.log(clarifaiResp)
+        this.displayFaceBoxes(this.calculateFaceLocations(clarifaiResp))
+      })
+
       .catch(err => console.log('Big error', err))
   }
 
@@ -97,8 +131,21 @@ class App extends Component {
     this.setState({route: route})
   }
 
+  loadUser = userData => {
+    const { id, name, email, entries, joined} = userData
+    this.setState({
+      user: {
+        id: id,
+        name: name,
+        email: email,
+        entries: entries,
+        joined: joined
+      }
+    })
+  }
+
   render() {
-    const { isSignedIn, imageUrl, route, boxes } = this.state
+    const { isSignedIn, imageUrl, route, boxes, user } = this.state
 
     return (
       <div>
@@ -110,21 +157,29 @@ class App extends Component {
 
         {route === 'home'
           ? <div>
-              <Logo />
-              <Rank />
-              <ImageLinkForm
-                onInputHandler={this.onInputHandler}
-                onSubmitHandler={this.onSubmitHandler}
-              />
-              <FaceRecognition
-                boxes={boxes}
-                imageUrl={imageUrl}
-              />
+            <Logo />
+            <Rank
+              user={user}
+            />
+            <ImageLinkForm
+              onInputHandler={this.onInputHandler}
+              onSubmitHandler={this.onSubmitHandler}
+            />
+            <FaceRecognition
+              boxes={boxes}
+              imageUrl={imageUrl}
+            />
           </div>
           : (
             route === 'signin'
-              ? <SignIn onRouteChange={this.onRouteChange} />
-              : <Register onRouteChange={this.onRouteChange} />
+              ? <SignIn
+                  onRouteChange={this.onRouteChange}
+                  loadUser={this.loadUser}
+                />
+              : <Register
+                  onRouteChange={this.onRouteChange}
+                  loadUser={this.loadUser}
+                />
             )
         }
       </div>
