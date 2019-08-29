@@ -7,12 +7,8 @@ import ImageLinkForm from './components/ImageLinkForm'
 import FaceRecognition from './components/FaceRecognition'
 import Rank from './components/Rank'
 import Particles from 'react-particles-js'
-import Clarifai from 'clarifai'
 
-const app = new Clarifai.App({
-  apiKey: ''
-})
-
+// particles background styles
 const particlesOptions = {
   particles: {
     number: {
@@ -25,30 +21,60 @@ const particlesOptions = {
   }
 }
 
+// set intial state of App component
+const initialState = {
+  input: '',
+  imageUrl: '',
+  boxes: [],
+  route: 'signin',
+  user: {
+    id: '',
+    email: '',
+    password: '',
+    name: '',
+    entries: 0,
+    joined: '',
+  }
+}
 
 class App extends Component {
   constructor() {
     super()
-    this.state = {
-      input: '',
-      imageUrl: '',
-      boxes: [],
-      route: 'signin',
-      isSignedIn: false,
-      user: {
-        id: '',
-        email: '',
-        password: '',
-        name: '',
-        entries: 0,
-        joined: '',
-      }
-    }
+    this.state = initialState
   }
 
+  // load user data on successful signin/register
+  loadUser = userData => {
+    const { id, name, email, entries, joined } = userData
+    this.setState({
+      user: {
+        id: id,
+        name: name,
+        email: email,
+        entries: entries,
+        joined: joined
+      }
+    })
+  }
 
-  // @param the response from the Clarifai API request
-  // the response has the locations of faces detected in the image in floating point form
+  onInputHandler = event => {
+    this.setState({ input: event.target.value })
+  }
+
+  // route detemines what elements are rendered by App
+  onRouteChange = route => {
+    if (route === 'signout') {
+      this.setState(initialState)
+    }
+    this.setState({ route: route })
+  }
+
+  // boxes are the locations of any faces deteced in submitted images
+  displayFaceBoxes = boxes => {
+    this.setState({ boxes: boxes })
+  }
+
+  // @param the response (face locations) from the Clarifai API request
   // @return an array of objects which are the pixel coord's on the image
   // for where to draw the boxes
   calculateFaceLocations = resp => {
@@ -73,86 +99,56 @@ class App extends Component {
     return faceLocations
   }
 
-  displayFaceBoxes = boxes => {
-    this.setState({ boxes: boxes })
-  }
-
-  onInputHandler = event => {
-    this.setState({ input: event.target.value })
-  }
-
-  // sends request to the Calrifai API for image prediction (face detection)
+  // when a user submits an image url
   onSubmitHandler = () => {
     this.setState({ imageUrl: this.state.input })
-    app.models.predict(
-      Clarifai.FACE_DETECT_MODEL,
-      this.state.input)
-      .then(clarifaiResp => {
-        // if we get a response from the API
-        if (clarifaiResp) {
-          // send a request to our DB server to update the user's entries count
-          fetch('http://localhost:3000/entry', {
-            method: 'put',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              id: this.state.user.id
-            })
+    // send request to the Calrifai API for image prediction (face detection)
+    fetch('http://localhost:3000/entryurl', {
+      method: 'post',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input: this.state.input
           })
-              // the server will respond with the user's updated entries count
-             .then(resp => resp.json())
-             .then(count => {
-              this.setState({
-                user: {
-                  ...this.state.user,
-                  entries: count
-                }
-              })
-             }) 
-        }
-        // finally call calc/display face boxes functions
-        console.log(clarifaiResp)
-        this.displayFaceBoxes(this.calculateFaceLocations(clarifaiResp))
-      })
-
-      .catch(err => console.log('Big error', err))
-  }
-
-  // handler for setting 'route' and 'isSignedIn' states
-  // 'route' determines what elements are rendered in App
-  // 'isSignedIn' determines what elements are rendered in Navigation / do we need this? could we just use 'route'?
-  // called from SignIn, Register, and Navigation components
-  onRouteChange = route => {
-    if (route === 'signout') {
-      // this.setState({ isSignedIn: false })
-      this.setState({ imageUrl: ''})
-    } else if (route === 'home') {
-      // this.setState({isSignedIn: true})
-    }
-    this.setState({route: route})
-  }
-
-  loadUser = userData => {
-    const { id, name, email, entries, joined} = userData
-    this.setState({
-      user: {
-        id: id,
-        name: name,
-        email: email,
-        entries: entries,
-        joined: joined
-      }
     })
+      .then(clarifaiResp => clarifaiResp.json())
+      .then(clarifaiResp => {
+        console.log(clarifaiResp)
+      // if we get a response from the API
+        if (clarifaiResp) {
+        // send a request to our DB server to update the user's entries count
+        fetch('http://localhost:3000/entry', {
+          method: 'put',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: this.state.user.id
+          })
+        })
+        // the server will respond with the user's updated entries count
+        .then(resp => resp.json())
+        .then(count => {
+        this.setState({
+          user: {
+            ...this.state.user,
+            entries: count
+          }
+        })
+        })
+        .catch(console.log)
+      }
+      // finally call calc/display face boxes functions
+      this.displayFaceBoxes(this.calculateFaceLocations(clarifaiResp))
+    })
+    .catch(err => console.log('Big error', err))
   }
 
   render() {
-    const { isSignedIn, imageUrl, route, boxes, user } = this.state
+    const { imageUrl, route, boxes, user } = this.state
 
     return (
       <div>
         <Particles className='particles' params={particlesOptions} />
         <Navigation
           route={route}
-          isSignedIn={isSignedIn}
           onRouteChange={this.onRouteChange} />
 
         {route === 'home'

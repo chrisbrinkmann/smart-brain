@@ -1,5 +1,6 @@
 import React from 'react'
 
+// register new user form
 class Register extends React.Component {
   constructor(props) {
     super(props)
@@ -22,6 +23,7 @@ class Register extends React.Component {
     this.setState({name: event.target.value})
   }
 
+  // send signin info to server for validation
   onSubmitHandler = () => {
     fetch('http://localhost:3000/register', {
       method: 'post',
@@ -34,7 +36,9 @@ class Register extends React.Component {
     })
       .then(resp => resp.json())
       .then(user => {
-        if (user) {
+        // if server resp with valid user,
+        // then pass the user object to loaduser and render 'home' route
+        if (user.id) {
           this.props.loadUser(user)
           this.props.onRouteChange('home')
         }
@@ -42,7 +46,6 @@ class Register extends React.Component {
   }
 
   render() {
-    
     return (
       <div className="pa4 b--black-10 br3 ba mv4 w-100 w-50-m w-25-l mw6 shadow-5 center">
         <div className="measure">
@@ -55,7 +58,8 @@ class Register extends React.Component {
                 className="db fw6 lh-copy f6"
                 htmlFor="email-address">Name
               </label>
-              <input onChange={this.onNameChange}
+              <input
+                onChange={this.onNameChange}
                 type="text"
                 name="name"
                 id="name"
@@ -65,17 +69,20 @@ class Register extends React.Component {
               <label className="db fw6 lh-copy f6"
                 htmlFor="email-address">Email
               </label>
-              <input onChange={this.onEmailChange}
+              <input
+                onChange={this.onEmailChange}
                 type="email"
                 name="email-address"
                 id="email-address"
                 className="pa2 input-reset ba bg-transparent hover-bg-black hover-white w-100" />
             </div>
             <div className="mv3">
-              <label className="db fw6 lh-copy f6"
+              <label
+                className="db fw6 lh-copy f6"
                 htmlFor="password">Password
                 </label>
-              <input onChange={this.onPasswordChange}
+              <input
+                onChange={this.onPasswordChange}
                 type="password"
                 name="password"
                 id="password"

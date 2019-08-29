@@ -1,10 +1,9 @@
 import React from 'react';
 
-
-function Navigation({ onRouteChange, isSignedIn, route }) {
+// nav links for signin/register/signout
+function Navigation({ onRouteChange, route }) {
   return (
       route === 'home'
-    // isSignedIn === true
       ? <nav style={{display: 'flex', justifyContent: 'flex-end'}}>
           <p
             onClick={() => onRouteChange('signout')}
