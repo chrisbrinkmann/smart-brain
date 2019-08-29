@@ -25,7 +25,7 @@ class Register extends React.Component {
 
   // send signin info to server for validation
   onSubmitHandler = () => {
-    fetch('http://localhost:3000/register', {
+    fetch('https://enigmatic-depths-30939.herokuapp.com/register', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

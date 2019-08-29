@@ -103,7 +103,7 @@ class App extends Component {
   onSubmitHandler = () => {
     this.setState({ imageUrl: this.state.input })
     // send request to the Calrifai API for image prediction (face detection)
-    fetch('http://localhost:3000/entryurl', {
+    fetch('https://enigmatic-depths-30939.herokuapp.com/entryurl', {
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -116,7 +116,7 @@ class App extends Component {
       // if we get a response from the API
         if (clarifaiResp) {
         // send a request to our DB server to update the user's entries count
-        fetch('http://localhost:3000/entry', {
+          fetch('https://enigmatic-depths-30939.herokuapp.com:3000/entry', {
           method: 'put',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
