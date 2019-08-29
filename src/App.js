@@ -116,7 +116,7 @@ class App extends Component {
       // if we get a response from the API
         if (clarifaiResp) {
         // send a request to our DB server to update the user's entries count
-          fetch('https://enigmatic-depths-30939.herokuapp.com:3000/entry', {
+          fetch('https://enigmatic-depths-30939.herokuapp.com/entry', {
           method: 'put',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
