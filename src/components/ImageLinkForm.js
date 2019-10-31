@@ -6,7 +6,7 @@ function ImageLinkForm( { onInputHandler, onSubmitHandler }) {
 	return (
 		<div>
 			<p className='f3 center'>
-				Upload an image to detect faces 
+				Enter an image URL to detect faces
 			</p>
 			<div className='center'>
 				<div className='pa4 br3 shadow-5 center form'>
